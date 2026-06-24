@@ -1,4 +1,72 @@
-- [Variables and string](#variable-and-strings)
+- **[Variables and string](#variable-and-strings)**
+- **[Test writing](#test-writing)**
+
+There are over `40` standard string methods natively available in JavaScript according to the official MDN Web Docs. 
+
+## Extraction Method
+Used to isolate, chop, or grab specific characters and pieces from a string:
+- **`at(index):`** Returns the character at a given positive or negative index.
+
+- **`charAt(index):`** Returns the character at a specific position.
+
+- **`charCodeAt(index):`** Gives the UTF-16 code unit number of a character.
+
+- **`codePointAt(index):`** Returns the full Unicode code point value of a character.
+
+- **`slice(start, end):`** Cuts out a section of a string and returns it as a new string.
+
+- **`substring(start, end):`** Similar to slice, but treats negative numbers as 0.
+
+## Searching & Matching Methods
+Used to locate where specific characters or phrases reside inside text:
+
+- **`includes(searchString):`** Checks if a string contains a specific phrase, returning true or false.
+
+- **`indexOf(searchString):`** Finds the starting index of the first occurrence of a phrase.
+
+- **`lastIndexOf(searchString):`** Finds the starting index of the last occurrence of a phrase.
+
+- **`startsWith(searchString):`** Checks if a string begins with specific characters.
+
+- **`endsWith(searchString):`** Checks if a string finishes with specific characters.
+
+- **`match(regex):`** Matches a regular expression against the string.
+
+- **`matchAll(regex):`** Returns an iterator of all matches against a regular expression.
+
+- **`search(regex):`** Searches for a match and returns the index position.
+
+##  Modification & Formatting Methods
+Used to clean up, alter, or transform the structure of text:
+
+- **`replace(old, new):`** Replaces the first instance of a pattern with new text.
+
+- **`replaceAll(old, new):`** Replaces every single occurrence of a pattern.
+
+- **`toUpperCase():`** Converts all characters to uppercase.
+
+- **`toLowerCase():`** Converts all characters to lowercase.
+
+- **`trim():`** Strips whitespace out of both ends of a string.
+
+- **`trimStart() / trimEnd():`** Cleans up whitespace from just the beginning or just the end.
+
+- **`padStart(length, char) / padEnd(length, char):`** Pads the string with another character until it reaches a desired length.
+
+- **`repeat(count):`** Multiplies and repeats the string a set number of times.
+
+- **`concat(str1, str2...):`** Glues two or more strings together
+
+## Conversion & Core Methods
+ Used to split strings into items or evaluate their internal values:
+ 
+ - **`split(separator):`** Tears a string apart at a specified delimiter and turns it into an Array.
+ 
+ - **`localeCompare(compareStr):`** Compares strings for sorting based on specific language rules.
+ 
+ - **`toString() / valueOf():`** Returns the primitive string value.
+ 
+ - **`normalize():`** Returns the Unicode Normalization Form of the string
 ## What Is JavaScript, and How Does It Work with HTML and CSS?
 
 <p>JavaScript is a powerful programming language that brings interactivity and dynamic behavior to websites.
@@ -10,7 +78,7 @@ For example, when you click a button, submit a form, or hover over a menu, JavaS
 Here's an example of how these three work together:
 
 #### **`index.html`**
-```html
+```javascript
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,81 +94,4 @@ Here's an example of how these three work together:
 </body>
 </html>
 ```
-
-### Variable and strings
-
-In JavaScript, a data type is the kind of value you store like a number or piece of text.
-
-A variable is a named container that stores a value of a specific data type, allowing you to reference and manipulate it throughout your code.
-
-You might remember in math class working with variables like this:
-
-x = 2
-y = 4
-
-x + y
-You were able to create variables like x and y and then reference those throughout your program and do mathematical operations like addition. It is a similar concept in programming. You can create your own variable names and assign values to them. These values will be different data types.
-
-Data types help the program understand the kind of data it's working with, whether it's a number, text, or something else.
-
-JavaScript has several basic data types that you'll use in your programs. We'll explore each data type in greater detail in future lessons. For now, here is a brief introduction of the different data types in JavaScript.
-
-The first data type we will look at is the Number type.
-
-A Number represents both integers and floating-point values. Examples of integers include 7, 19, and 90.
-
-NOTE: console.log() is a function that outputs information to the console, which is a part of your web browser used for debugging code. You will learn more about console.log() in future lessons. Also, the // symbols are used to add comments in your code. Comments are notes for yourself or other programmers that are ignored when the code runs.
-
-Enable the interactive editor and try changing some of the integers to see it update in the console.
-
-// Examples of integers
-console.log(3);
-console.log(5);
-console.log(-67);
-A floating point number is a number with a decimal point. Examples of floating point numbers include 3.14 and 5.2.
-
-// Examples of floating point numbers
-console.log(3.14);
-console.log(7.2);
-console.log(-14.5);
-The next data type is a String.
-
-A String is a sequence of characters, or text, enclosed in quotes. Here is an example string using double quotes:
-
-console.log("I love to code!");
-Here is an example using single quotes:
-
-console.log('I love to code!');
-Oftentimes you will use strings to represent names, labels, alert messages, etc.
-
-Another data type used in JavaScript is the Boolean type.
-
-A Boolean represents one of two values: true or false. For example, a program might check whether a user is logged in (true) or not (false) and change the page based on that. If the user is logged in, you probably want to show them the dashboard page. Otherwise, you will want to show them the login page.
-
-The next two data types used in JavaScript are undefined and null.
-
-undefined means a variable has been declared but hasn't been given a value yet. You will learn more about this in the next lesson.
-
-null means the variable has been intentionally set to "nothing" and does not hold any value. We will explore more on how this works in future lessons.
-
-The last three data types are more complex in nature. These are objects, symbols and BigInt.
-
-An Object is a collection of key-value pairs.
-
-{
-  name: "Alice",
-  age: 30
-};
-Objects are great for grouping related information together. You will learn more about how to work with objects in a future module.
-
-A Symbol is a special type of value in JavaScript that is always unique and cannot be changed. It's often used to create unique labels or identifiers for properties:
-
-Symbol('mySymbol');
-BigInt is used for very large numbers that exceed the limit of the Number type:
-
-1234567890123456789012345678901234567890n;
-In this example, we create a BigInt by adding n at the end of a very large number.
-
-Symbol and BigInt are two types that are less commonly used, but they are still important to know about.
-
-Understanding these data types helps you handle and work with various kinds of data in your programs, as each type has its own characteristics and behaviors.
+### Test writing
