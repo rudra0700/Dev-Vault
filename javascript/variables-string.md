@@ -75,6 +75,10 @@ While HTML and CSS are used to structure content and style elements on a page, J
 
 For example, when you click a button, submit a form, or hover over a menu, JavaScript determines how the page behaves.</p>
 
+In JavaScript and TypeScript, any function marked with async automatically returns a Promise, even if you return a plain value inside the code.
+
+1. The Reality of Network RequestsFetching data from an API (fetch("/api/user")) takes time. The data is not available instantly. JavaScript does not pause your entire application while waiting; instead, it immediately returns a Promise—a placeholder object that says: "I don't have the data right now, but I promise to give it to you when the network request finishes."
+
 Here's an example of how these three work together:
 
 #### **`index.html`**
