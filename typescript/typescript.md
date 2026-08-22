@@ -1,6 +1,13 @@
 ## The “Must-Know” TypeScript (80% of daily use)
 
 - **[Real World Example](#some-real-world-example)**
+- **[never vs unknown vs any](#never-vs-unknown-vs-any)**
+- **[Some bug](#some-bug)**
+- **[Unknow with express handling](#unknown-with-express-error-handling)**
+- **[Where does never enter the picture?](#now-where-does-never-enter-the-picture)**
+- **[Interview question](#common-interview-tricky-questions)**
+
+
 
 **Basic Types (FOUNDATION)** :
 
@@ -325,7 +332,7 @@ enum Role {
 
 ```typescript
 interface User {
-  _id: strring;
+  _id: string;
   name: string;
   email: string;
 }
@@ -346,7 +353,7 @@ function echoString(item: string): string {
 }
 
 echoString("Hello"); // Works
-echoString(123); // ❌ Error! Cannot pass a number.
+echoString(123); // Error! Cannot pass a number.
 
 // With Generics (Flexible & "Generic")
 
@@ -560,11 +567,11 @@ greet(): void {
 // undefined = actual value
 
 function test(): void {
-  return; // ✅ ok
+  return; // ok
 }
 
 function test2(): undefined {
-  return undefined; // ✅ must return explicitly
+  return undefined; // must return explicitly
 }
 
 // 1. Logging / Side Effects
@@ -608,7 +615,7 @@ function printSum(a: number, b: number): void {
 }
 
 
-// 3. Callback parameter type (very common in real apps)
+// 6. Callback parameter type (very common in real apps)
 function fetchData(url: string, callback: (data: string) => void): void {
   // simulate async work
   setTimeout(() => {
@@ -619,4 +626,580 @@ function fetchData(url: string, callback: (data: string) => void): void {
 fetchData("api/users", (data) => {
   console.log("Received:", data);
 });
+
+// Bonus (Interview Trick)
+function fetchData(url: string): Promise<string> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("some data");
+    }, 1000);
+  });
+}
+
+// 7. React-style example (extremely common in real projects)
+interface ButtonProps {
+  onClick: () => void;
+  label: string;
+}
+
+function Button({ onClick, label }: ButtonProps) {
+  return <button onClick={onClick}>{label}</button>;
+}
+
+// ========================== void vs never(start) ==========================
+
+// 1. void→ “returns nothing”
+// The function finishes normally , but doesn't return a value.
+
+function logMessage(): void {
+// Function runs
+// Execution complete
+// No return value
+  console.log("Hello");
+}
+
+// 2. never→ “never returns at all”
+// The function never finishes execution .
+
+function throwError(): never {
+  throw new Error("Something went wrong");
+}
+
+function infiniteLoop(): never {
+  while (true) {}
+}
+
+// Function NEVER complete
+// Control never comes back
+
+// void means a function completes without returning a value, while never means a function never completes execution.
+
+// ======================= void vs never(end) ======================
+
+// void is used when a function completes without returning a value, while never is used when a function never completes execution, such as in errors or infinite loops. 
+
+// In arrow functions, void indicates that any returned value will be ignored.
+
+// 8. void in Arrow Functions
+const greet = (): void => {
+  console.log("Hello Rudra");
+};
+
+const greet = (): void => console.log("Hello"); // still void though arrow function is short.
+
+
+// 9. Special Behavior (VERY IMPORTANT)
+
+// TypeScript allows this because: void means “caller will ignore the return value”. So internally it returns, but you can't use it.
+
+const fn: () => void = () => {
+  return 100; // Allowed!
+};
+
+const result = fn(); // result is typed as void
+
+// Real-world Example (React Event Handler)
+const handleClick = (): void => {
+  return 123; // allowed but useless
+};
 ```
+
+## never vs unknown vs any
+
+**`any`** → “I don’t care, do anything” (dangerous)
+
+**`unknown`** → “I don’t know yet, check first” (safe)
+
+**`never`** → “This should NEVER happen” (strict)
+
+
+### any(Danger Zone)
+ 
+ Turns OFF TypeScript safety. TypeScript says: **`“do whatever you want”`**
+
+```javascript
+let value: any = "Rudra";
+value = 10;
+value.toUpperCase(); // Runtime crash (number has no toUpperCase)
+```
+
+ Real Bug (VERY COMMON)
+ ```javascript
+function processData(data: any) {
+  return data.toUpperCase();
+}
+
+processData(123); // runtime error
+ ```
+
+TypeScript didn't stop you. App crashes in production.
+
+ ### unknown( Safe Version of any )
+
+You MUST check type before using
+
+```javascript
+
+let value: unknown = "Rudra";
+
+// Not allowed directly
+value.toUpperCase(); 
+
+//  Safe way
+if (typeof value === "string") {
+  value.toUpperCase();
+}
+```
+
+Real-world Example (API response)
+
+```javascript
+function handleApiResponse(data: unknown) {
+  if (typeof data === "string") {
+    console.log(data.toUpperCase());
+  }
+}
+```
+API data is unpredictable → unknown is perfect.
+
+### never( Impossible State )
+
+Means: “This should NEVER happen”
+
+```javascript
+function throwError(msg: string): never {
+  throw new Error(msg);
+}
+```
+
+Real-world Bug Prevention( Without never )
+
+```javascript
+type Role = "admin" | "user";
+```
+
+```javascript
+function checkRole(role: Role) {
+  if (role === "admin") return true;
+  if (role === "user") return false;
+}
+```
+ Later someone adds:
+
+```javascript
+type Role = "admin" | "user" | "guest";
+```
+ Now "guest"is NOT handled → bug!
+
+With never( Safe )
+```javascript
+function checkRole(role: Role) {
+  if (role === "admin") return true;
+  if (role === "user") return false;
+
+
+  const x: never = role; // TypeScript error if new type added
+}
+```
+ Forces you to handle all cases.
+
+ ## Some bug
+
+ ### Bug 1: Using anyin Forms / API
+
+ ```javascript
+ const user: any = await fetchUser();
+console.log(user.name.toUpperCase());
+```
+
+if API changes:
+
+```javascript
+{ "name": null }
+```
+
+ Crash: **`null.toUpperCase()`**
+
+### Bug 2: Ignoring unknown
+```javascript
+function parse(data: unknown) {
+  return data.length; // unsafe
+}
+```
+If data = 100 → crash
+
+### Bug 3: Missing Cases (no never)
+
+```javascript
+type Status = "loading" | "success" | "error";
+```
+
+```javascript
+function render(status: Status) {
+  if (status === "loading") return "...";
+  if (status === "success") return "Done";
+}
+```
+ Forgot "error" and UI breaks silently
+
+ ### Bug 4: Wrong Assumption with "any"
+
+```javascript
+function calculate(price: any) {
+  return price + 10;
+}
+
+calculate("100"); // "10010" (string concat)
+```
+
+Silent logic bug (very dangerous)
+
+any disables type safety, unknownenforces type checking before use, and neverrepresents impossible states or code paths that should never execute.
+
+## unknown+ type guards work in real MERN app
+
+### The real problem: TypeScript doesn't trust runtime data
+
+Imagine your Express backend receives this:
+
+```javascript
+app.post("/users", (req, res) => {
+  const data = req.body;
+  console.log(data.name);
+});
+```
+
+At runtime, **`req.body`** it could be:
+
+```javascript
+{
+  "name": "Rudra",
+  "age": 25
+}
+// what if
+{
+  "name": 123
+}
+// and also what if 
+{
+  "name": 123
+}
+or  even
+{
+  "name": null
+}
+```
+
+TypeScript cannot magically guarantee that external data is correct.
+
+That's where **`unknown+ type guards`** become useful.
+
+### unknown means "I don't trust this yet"
+
+Suppose you have
+
+```javascript
+function processUser(data: unknown) {
+  console.log(data.name);  // TypeScript won't allow this.
+}
+
+// Because TypeScript is saying: "You told me you don't know what datais. So prove that it has a name property first."
+```
+
+### Type guard = proving the type
+
+A type guard is code that checks something at runtime and allows TypeScript to narrow the type.
+
+```javascript
+typeof value === "string"
+```
+
+Example:
+
+```javascript
+function printValue(value: unknown) {
+  if (typeof value === "string") {
+    console.log(value.toUpperCase());
+  }
+}
+
+// Before the if: "unknown" and Inside the if: "string". TypeScript has narrowed the type.
+```
+
+### Another very realistic MERN example:localStorage
+
+This is a good one for frontend development. You might store:
+
+```javascript
+localStorage.setItem(
+  "user",
+  JSON.stringify({
+    name: "Rudra",
+    role: "admin"
+  })
+);
+```
+
+Later:
+
+```javascript
+const data = JSON.parse(localStorage.getItem("user")!);
+```
+
+The dangerous part is that you're assuming the stored data is correct.
+
+Instead do this : 
+
+```javascript
+const raw = localStorage.getItem("user");
+
+if (raw) {
+  const data: unknown = JSON.parse(raw);
+
+  if (isUser(data)) {
+    console.log(data.name);
+  }
+}
+```
+Now your application doesn't blindly trust external data.
+
+```javascript
+// Some type gurd method
+// 1. typeof
+// 2. Array.isArray()
+// 3. instancef
+
+// Example :
+if (typeof value === "string") {
+  // Do something
+}
+
+if (Array.isArray(data)) {
+  console.log(data.length);
+}
+
+try {
+  // something
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.log(error.message);
+  }
+}
+
+// This is much safer than:
+
+catch (error: any) {
+  console.log(error.message);
+}
+```
+
+## unknown with Express error handling
+
+This is particularly useful in backend code.
+
+```javascript
+try {
+  await createUser();
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.log(error.message);
+  }
+}
+```
+Why unknown? Because you don't actually know what was thrown.
+
+JavaScript may throw one of them :
+
+```javascript
+throw "Something went wrong";
+throw 123;
+throw { message: "Failed" };
+```
+
+So:
+```javascript
+catch (error: unknown)
+```
+is essentially saying. "I don't know what was thrown. Let me check."
+
+## Now where does never enter the picture
+
+Imagine your backend has:
+```javascript
+type Role = "admin" | "user";
+```
+You want to handle every possible role:
+
+```javascript
+function getPermission(role: Role): string {
+  switch (role) {
+    case "admin":
+      return "Full access";
+
+
+    case "user":
+      return "Limited access";
+  }
+}
+```
+
+Everything is handled. But later someone changes:
+
+```javascript
+type Role = "admin" | "user" | "moderator";
+```
+
+Now you've forgotten to add moderator validation. That's where an exhaustive nevercheck is useful.
+
+```javascript
+function assertNever(value: never): never {
+  throw new Error(`Unexpected value: ${value}`);
+}
+```
+
+Then:
+
+```javascript
+function getPermission(role: Role): string {
+  switch (role) {
+    case "admin":
+      return "Full access";
+    case "user":
+      return "Limited access";
+    default:
+      return assertNever(role);
+  }
+}
+```
+
+Now if somebody adds "moderator"but forgets to handle it:
+
+```javascript
+return assertNever(role);
+```
+
+```javascript
+                    TypeScript
+                        │
+          ┌─────────────┼─────────────┐
+          │             │             │
+         any         unknown        never
+          │             │             │
+       "Trust me"   "I don't know"  "Impossible"
+          │             │             │
+       No safety     Check first    Must not happen
+```
+
+## Common interview tricky questions
+```javascript
+// Question 1
+
+// What is the difference between any and unknown?
+
+// Ans :  Both can represent values ​​of any type, but any disables type checking, while unknown requires us to narrow or check the type before using the value.
+
+// Question 2
+
+// Which one is safer?
+
+let a: any;
+let b: unknown;
+
+// Answer: unknown is safer. Because you cannot perform arbitrary operations on unknown.
+
+// Question 3
+
+// Why is 'unknown" better than anyfor API responses?
+
+// Because API data is runtime data .TypeScript cannot guarantee that the server actually senses what you expect.
+
+const data: unknown = await response.json();
+
+// forces you to validate/narrow it before using it.
+
+// Question 4 — tricky
+
+// What's happening here?
+
+function test(): never {
+  while (true) {
+    console.log("running");
+  }
+}
+
+// The function has return type "never", because execution never reaches the end of the function.
+
+// Question 5 — another tricky one
+
+// What's happening here?
+
+function test(): never {
+  console.log("hello"); // TypeScript error.
+}
+
+// Why? Because the function does eventually finish , so it cannot be never. It should normally be:
+
+function test(): void {
+  console.log("hello");
+}
+
+// Question 6
+
+// Why would you use it "unknown" in a "catch" block?
+
+// Because the value thrown by JavaScript isn't guaranteed to be an Error.So :
+
+try {
+  // ...
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.log(error.message);
+  }
+}
+
+// is safer than assuming:
+
+catch (error: any)
+```
+
+```javascript
+External/untrusted data
+        ↓
+     unknown
+        ↓
+   type guard
+        ↓
+   known type
+        ↓
+   safely use it
+```
+```javascript
+// And for your application's internal logic:
+
+Union / possible states
+        ↓
+      switch
+        ↓
+ handle every case
+        ↓
+      never
+        ↓
+ catch forgotten cases
+```
+
+While:
+```javascript
+any
+ ↓
+"Skip TypeScript's checking"
+ ↓
+use only when you genuinely have a reason
+```
+
+If you remember only one sentence:
+
+**`"unknown"`**  protects you from data you don't understand yet; **`"never"`** protects you from logic that should be impossible; **`"any"`** removes that protection.
+
+
+
+
